@@ -178,40 +178,58 @@ Output size: 1.2 GB
 - HDFS Integration
 - Shuffle and Sort Phase
 
+# Task 14 - Semester-Based Partitioning using Hadoop MapReduce
+
+## Project Overview
+
+This project analyzes student academic performance data across different semesters using Hadoop MapReduce.
+
+The main goal of the project is to use a Custom Partitioner to distribute records so that each reducer processes data for one semester only.
+
+The project calculates the following statistics for each semester:
+
+- Average grade per semester
+- Pass rate per semester
+- Total number of students per semester
+
+The project was implemented and tested on Cloudera Hadoop VM using HDFS and YARN.
+
 ---
 
-Task 14 - Semester-Based Partitioning using Hadoop MapReduce
-Project Overview
+## Technologies Used
 
-This task analyzes student academic performance data across different semesters using Hadoop MapReduce.
+- Java
+- Hadoop MapReduce
+- HDFS
+- YARN
+- Cloudera QuickStart VM
+- Custom Partitioner
 
-The goal is to ensure that each reducer processes one semester only using a Custom Partitioner, and then compute:
+---
 
-Average grade per semester
-Pass rate per semester
-Basic student statistics per semester
+## Dataset Information
 
-This helps in efficient distributed processing of academic datasets grouped logically by semester.
+### Input Format
 
-Technologies Used
-Java
-Hadoop MapReduce
-HDFS
-YARN
-Cloudera QuickStart VM
-Custom Partitioner
-Dataset Information
-Input Dataset Format
+The input dataset is a CSV file with the following format:
 
-student_id, semester, grade, subject, instructor
+student_id,semester,grade,subject,instructor
 
-Example:
+### Example Input
+
 ST001,Fall2023,85,Mathematics,Prof. Smith
 ST002,Fall2023,90,Mathematics,Prof. Smith
 ST003,Spring2024,88,Physics,Prof. Johnson
+ST004,Fall2023,92,Chemistry,Prof. Williams
+ST005,Spring2024,87,Biology,Prof. Brown
 
-Output Format
-Per Semester Results
+---
+
+## Output Format
+
+The output contains statistics for each semester.
+
+### Example Output
 
 Fall2023
 Avg Grade: 86
@@ -223,60 +241,195 @@ Avg Grade: 88.7
 Pass Rate: XX%
 Total Students: X
 
-Hadoop Components
-Mapper
+---
 
-The Mapper reads each record and extracts:
+## Hadoop Components
 
-student_id
-semester
-grade
-Output Key-Value:
+## 1. Mapper
+
+The Mapper reads student records from the input file.
+
+For each valid record, it extracts:
+
+- Semester
+- Grade
+
+Then it emits the following key-value pair:
 
 (semester, grade)
 
-Custom Partitioner
+### Example
 
-A custom partitioner is implemented to ensure that:
+Fall2023, 85
+Spring2024, 88
 
-All records of the same semester go to the same reducer
-Each reducer processes exactly one semester
+---
 
-Example logic:
+## 2. Custom Partitioner
 
-Fall2023 → Reducer 0
+The Custom Partitioner controls how data is distributed among reducers.
+
+It ensures that:
+
+- All records of the same semester go to the same reducer
+- Each reducer processes exactly one semester
+
+### Example Mapping
+
+Fall2023   → Reducer 0
 Spring2024 → Reducer 1
-Reducer
 
-Each reducer processes one semester only and calculates:
+This allows reducer-level parallelism and keeps semester data separated.
 
-Average Grade
-Pass Rate (students with grade ≥ 50)
-Total number of students
-Basic statistics per semester
-Data Validation
+---
 
-The implementation ensures:
+## 3. Reducer
 
-Grade must be between 0 and 100
-Invalid or malformed records are skipped
-Missing fields are ignored safely
-How to Run
-Compile
+Each reducer processes records for one semester only.
+
+The Reducer calculates:
+
+- Average grade
+- Pass rate
+- Total number of students
+
+The pass rate is calculated based on the following condition:
+
+grade >= 50
+
+---
+
+## 4. Driver
+
+The Driver class configures and runs the Hadoop MapReduce job.
+
+It sets:
+
+- Mapper class
+- Reducer class
+- Custom Partitioner class
+- Input path
+- Output path
+- Number of reducers
+
+The number of reducers is set according to the number of semesters.
+
+---
+
+## Data Validation
+
+The implementation handles invalid input safely.
+
+Invalid records are skipped if they contain:
+
+- Missing fields
+- Malformed records
+- Invalid numeric grade values
+- Grades outside the range 0 to 100
+
+This prevents the MapReduce job from failing due to bad input data.
+
+---
+
+## How to Run
+
+### 1. Compile the Java Files
+
 javac -classpath `hadoop classpath` -d . *.java
+
+---
+
+### 2. Create the JAR File
+
 jar -cvf task14.jar *
-Run Hadoop Job
-hadoop jar task14.jar Task14Driver \
-/user/cloudera/project/task14/input \
-/user/cloudera/project/task14/output
-HDFS Commands
-Upload Input Data
+
+---
+
+### 3. Create Input Directory in HDFS
+
+hdfs dfs -mkdir -p /user/cloudera/project/task14/input
+
+---
+
+### 4. Upload Input Data to HDFS
+
 hdfs dfs -put students.csv /user/cloudera/project/task14/input
-Key Concepts Demonstrated
-Custom Partitioner in Hadoop
-Key-based Data Distribution
-Reducer-level Parallelism Control
-Educational Data Analytics
-Large-scale Batch Processing
-Hadoop MapReduce Design Patterns
-Author
+
+---
+
+### 5. Remove Old Output Directory if It Exists
+
+hdfs dfs -rm -r /user/cloudera/project/task14/output
+
+---
+
+### 6. Run the Hadoop Job
+
+hadoop jar task14.jar Task14Driver /user/cloudera/project/task14/input /user/cloudera/project/task14/output
+
+---
+
+### 7. View the Output
+
+hdfs dfs -cat /user/cloudera/project/task14/output/*
+
+---
+
+## HDFS Commands Used
+
+### Upload Input Data
+
+hdfs dfs -put students.csv /user/cloudera/project/task14/input
+
+### View Files in Input Directory
+
+hdfs dfs -ls /user/cloudera/project/task14/input
+
+### View Output
+
+hdfs dfs -cat /user/cloudera/project/task14/output/*
+
+### Remove Output Directory
+
+hdfs dfs -rm -r /user/cloudera/project/task14/output
+
+---
+
+## Key Concepts Demonstrated
+
+- Hadoop MapReduce
+- Custom Partitioner
+- Key-based data distribution
+- Reducer-level parallelism control
+- HDFS input and output handling
+- Educational data analytics
+- Large-scale distributed processing
+- Big Data batch processing
+
+---
+
+## Performance Statistics
+After running the MapReduce job, Hadoop provides execution statistics such as:
+
+Map input records: X
+Reduce input records: X
+Reduce output records: X
+Output size: X
+
+These statistics can be viewed in the terminal output or through the YARN ResourceManager interface.
+
+---
+
+## Project Summary
+
+This project demonstrates how Hadoop MapReduce can be used to analyze student academic performance data.
+
+By using a Custom Partitioner, records are distributed based on semester, ensuring that each reducer handles only one semester.
+
+This improves data organization and demonstrates an important Big Data concept: controlling data flow between Mapper and Reducer using custom partitioning.
+
+---
+
+## Author
+
+Task 14 - Semester-Based Partitioning using Hadoop MapReduce
