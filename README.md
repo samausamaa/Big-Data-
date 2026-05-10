@@ -180,6 +180,103 @@ Output size: 1.2 GB
 
 ---
 
-# Author
+Task 14 - Semester-Based Partitioning using Hadoop MapReduce
+Project Overview
 
-Name: Shahd
+This task analyzes student academic performance data across different semesters using Hadoop MapReduce.
+
+The goal is to ensure that each reducer processes one semester only using a Custom Partitioner, and then compute:
+
+Average grade per semester
+Pass rate per semester
+Basic student statistics per semester
+
+This helps in efficient distributed processing of academic datasets grouped logically by semester.
+
+Technologies Used
+Java
+Hadoop MapReduce
+HDFS
+YARN
+Cloudera QuickStart VM
+Custom Partitioner
+Dataset Information
+Input Dataset Format
+
+student_id, semester, grade, subject, instructor
+
+Example:
+ST001,Fall2023,85,Mathematics,Prof. Smith
+ST002,Fall2023,90,Mathematics,Prof. Smith
+ST003,Spring2024,88,Physics,Prof. Johnson
+
+Output Format
+Per Semester Results
+
+Fall2023
+Avg Grade: 86
+Pass Rate: XX%
+Total Students: X
+
+Spring2024
+Avg Grade: 88.7
+Pass Rate: XX%
+Total Students: X
+
+Hadoop Components
+Mapper
+
+The Mapper reads each record and extracts:
+
+student_id
+semester
+grade
+Output Key-Value:
+
+(semester, grade)
+
+Custom Partitioner
+
+A custom partitioner is implemented to ensure that:
+
+All records of the same semester go to the same reducer
+Each reducer processes exactly one semester
+
+Example logic:
+
+Fall2023 → Reducer 0
+Spring2024 → Reducer 1
+Reducer
+
+Each reducer processes one semester only and calculates:
+
+Average Grade
+Pass Rate (students with grade ≥ 50)
+Total number of students
+Basic statistics per semester
+Data Validation
+
+The implementation ensures:
+
+Grade must be between 0 and 100
+Invalid or malformed records are skipped
+Missing fields are ignored safely
+How to Run
+Compile
+javac -classpath `hadoop classpath` -d . *.java
+jar -cvf task14.jar *
+Run Hadoop Job
+hadoop jar task14.jar Task14Driver \
+/user/cloudera/project/task14/input \
+/user/cloudera/project/task14/output
+HDFS Commands
+Upload Input Data
+hdfs dfs -put students.csv /user/cloudera/project/task14/input
+Key Concepts Demonstrated
+Custom Partitioner in Hadoop
+Key-based Data Distribution
+Reducer-level Parallelism Control
+Educational Data Analytics
+Large-scale Batch Processing
+Hadoop MapReduce Design Patterns
+Author
